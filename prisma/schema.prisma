@@ -14,3 +14,14 @@ model User {
   role      String   @default("guest")
   createdAt DateTime @default(now())
 }
+
+model Notification {
+  id          Int      @id @default(autoincrement())
+  forUser     String
+  title       String
+  description String
+  date        DateTime
+  regular     Boolean  @default(false)
+  regularDate DateTime?
+  createdAt   DateTime @default(now())
+}

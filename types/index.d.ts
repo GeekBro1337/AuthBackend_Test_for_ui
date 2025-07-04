@@ -15,3 +15,14 @@ export interface ResetPasswordBody {
   sa_password: string
   newPassword: string
 }
+
+export interface Notification {
+  id: number
+  forUser: string
+  title: string
+  description: string
+  date: string
+  regular: boolean
+  regularDate?: string
+  createdAt: string
+}
