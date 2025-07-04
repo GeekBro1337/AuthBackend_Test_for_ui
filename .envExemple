@@ -9,3 +9,6 @@ DATABASE_URL="postgresql://user:password@localhost:5432/nuxtdb"
 
 # Секрет для генерации JWT
 JWT_SECRET="43298ohwsviodsfahu04f3883y034t0rehell"
+
+# Пароль администратора для сброса паролей
+SA_PASSWORD="admin-secret"

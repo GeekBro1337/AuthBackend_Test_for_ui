@@ -11,7 +11,9 @@
 pnpm install
 ```
 
-2. Скопируйте `.envExemple` в `.env` и при необходимости измените значения
+2. Скопируйте `.envExemple` в `.env` и при необходимости измените значения.
+   В файле есть переменная `SA_PASSWORD` – общий пароль администратора, 
+   необходимый для сброса пароля пользователей.
 
 ```bash
 cp .envExemple .env
@@ -72,6 +74,26 @@ pnpm dev
 ```
 
 **Ответ** – структура такая же, как у `register`.
+
+### POST `/api/reset-password`
+
+Сброс пароля администраторами. Требуется знание переменной `SA_PASSWORD`.
+
+**Тело запроса**
+
+```json
+{
+  "name": "username",
+  "sa_password": "admin-secret",
+  "newPassword": "newpass123"
+}
+```
+
+**Ответ**
+
+```json
+{ "success": true }
+```
 
 ### GET `/api/me`
 

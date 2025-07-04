@@ -9,3 +9,9 @@ export interface AuthResult {
   role: string
   token: string
 }
+
+export interface ResetPasswordBody {
+  name: string
+  sa_password: string
+  newPassword: string
+}
