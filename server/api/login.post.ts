@@ -4,13 +4,13 @@ import jwt from 'jsonwebtoken'
 import prisma from '../utils/prisma'
 
 export default defineEventHandler(async (event) => {
-  const { email, password } = await readBody(event)
+  const { name, password } = await readBody(event)
 
-  if (!email || !password) {
-    throw createError({ statusCode: 400, statusMessage: 'email и password обязательны' })
+  if (!name || !password) {
+    throw createError({ statusCode: 400, statusMessage: 'name и password обязательны' })
   }
 
-  const user = await prisma.user.findUnique({ where: { email } })
+  const user = await prisma.user.findUnique({ where: { name } })
 
   if (!user || !user.password) {
     throw createError({ statusCode: 401, statusMessage: 'Неверные учётные данные' })
@@ -31,7 +31,8 @@ export default defineEventHandler(async (event) => {
   const token = jwt.sign({ userId: user.id }, secret, { expiresIn: '7d' })
 
   return {
-    user: { id: user.id, username: user.username, email: user.email },
+    name: user.name,
+    role: user.role,
     token
   }
 })

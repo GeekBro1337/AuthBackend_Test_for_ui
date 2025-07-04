@@ -43,9 +43,8 @@ pnpm dev
 
 ```json
 {
-  "email": "user@example.com",
-  "password": "password123",
-  "username": "username"
+  "name": "username",
+  "password": "password123"
 }
 ```
 
@@ -53,7 +52,8 @@ pnpm dev
 
 ```json
 {
-  "user": { "id": 1, "username": "username", "email": "user@example.com" },
+  "name": "username",
+  "role": "guest",
   "token": "<jwt>"
 }
 ```
@@ -66,12 +66,12 @@ pnpm dev
 
 ```json
 {
-  "email": "user@example.com",
+  "name": "username",
   "password": "password123"
 }
 ```
 
-**Ответ** – такой же, как у `register`.
+**Ответ** – структура такая же, как у `register`.
 
 ### GET `/api/me`
 
@@ -85,7 +85,7 @@ Authorization: Bearer <jwt>
 
 ```json
 {
-  "user": { "id": 1, "username": "username", "email": "user@example.com" }
+  "user": { "id": 1, "name": "username", "role": "guest" }
 }
 ```
 
