@@ -1,36 +1,38 @@
-import { defineEventHandler, getHeader, createError } from 'h3'
+import { defineEventHandler, readBody, createError } from 'h3'
+import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
 import prisma from '../utils/prisma'
 
 export default defineEventHandler(async (event) => {
-  const auth = getHeader(event, 'authorization') // читаем заголовок Authorization
+  const { name, password } = await readBody(event)
 
-  if (!auth || !auth.startsWith('Bearer ')) {
-    throw createError({ statusCode: 401, statusMessage: 'Нет токена в заголовке Authorization' })
+  if (!name || !password) {
+    throw createError({ statusCode: 400, statusMessage: 'name и password обязательны' })
   }
 
-  const token = auth.slice(7) // убираем "Bearer "
+  const user = await prisma.user.findUnique({ where: { name } })
+
+  if (!user || !user.password) {
+    throw createError({ statusCode: 401, statusMessage: 'Неверные учётные данные' })
+  }
+
+  const valid = await bcrypt.compare(password, user.password)
+
+  if (!valid) {
+    throw createError({ statusCode: 401, statusMessage: 'Неверные учётные данные' })
+  }
+
   const secret = process.env.JWT_SECRET
 
   if (!secret) {
     throw createError({ statusCode: 500, statusMessage: 'JWT_SECRET не задан в .env' })
   }
 
-  let payload
-  try {
-    payload = jwt.verify(token, secret) as { userId: number }
-  } catch (err) {
-    throw createError({ statusCode: 401, statusMessage: 'Недействительный токен' })
+  const token = jwt.sign({ userId: user.id }, secret, { expiresIn: '7d' })
+
+  return {
+    name: user.name,
+    role: user.role,
+    token
   }
-
-  const user = await prisma.user.findUnique({
-    where: { id: payload.userId },
-    select: { id: true, username: true, email: true }
-  })
-
-  if (!user) {
-    throw createError({ statusCode: 404, statusMessage: 'Пользователь не найден' })
-  }
-
-  return { user }
 })

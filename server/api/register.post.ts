@@ -4,29 +4,23 @@ import jwt from 'jsonwebtoken'
 import prisma from '../utils/prisma'
 
 export default defineEventHandler(async (event) => {
-  // 1. Читаем входные данные
-  const { email, password, username } = await readBody(event)
+  const { name, password } = await readBody(event)
 
-  // 2. Быстрая валидация
-  if (!email || !password || !username) {
-    throw createError({ statusCode: 400, statusMessage: 'email, password, username обязательны' })
+  if (!name || !password) {
+    throw createError({ statusCode: 400, statusMessage: 'name и password обязательны' })
   }
 
-  // 3. Проверяем, нет ли уже такого email
-  const exists = await prisma.user.findUnique({ where: { email } })
+  const exists = await prisma.user.findUnique({ where: { name } })
   if (exists) {
     throw createError({ statusCode: 409, statusMessage: 'Пользователь уже существует' })
   }
 
-  // 4. Хешируем пароль
   const hashed = await bcrypt.hash(password, 10)
 
-  // 5. Создаём пользователя
   const user = await prisma.user.create({
-    data: { email, username, password: hashed }
+    data: { name, password: hashed }
   })
 
-  // 6. Генерируем токен
   const secret = process.env.JWT_SECRET
   if (!secret) {
     throw createError({ statusCode: 500, statusMessage: 'JWT_SECRET не задан в .env' })
@@ -34,9 +28,9 @@ export default defineEventHandler(async (event) => {
 
   const token = jwt.sign({ userId: user.id }, secret, { expiresIn: '7d' })
 
-  // 7. Отдаём ответ
   return {
-    user: { id: user.id, username: user.username, email: user.email },
+    name: user.name,
+    role: user.role,
     token
   }
 })

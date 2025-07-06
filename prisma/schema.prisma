@@ -9,8 +9,19 @@ datasource db {
 
 model User {
   id        Int      @id @default(autoincrement())
-  username  String   @unique
-  email     String   @unique
+  name      String   @unique
   password  String?
+  role      String   @default("guest")
   createdAt DateTime @default(now())
+}
+
+model Notification {
+  id          Int      @id @default(autoincrement())
+  forUser     String
+  title       String
+  description String
+  date        DateTime
+  regular     Boolean  @default(false)
+  regularDate DateTime?
+  createdAt   DateTime @default(now())
 }

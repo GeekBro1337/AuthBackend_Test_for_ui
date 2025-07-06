@@ -1,75 +1,167 @@
-# Nuxt Minimal Starter
+# Auth Backend Test
 
-Look at the [Nuxt documentation](https://nuxt.com/docs/getting-started/introduction) to learn more.
+Простой сервер на Nuxt 3 с примерами эндпоинтов для регистрации и авторизации пользователей.  
+Сервис использует PostgreSQL через Prisma и выдает JWT‑токены.
 
-## Setup
+## Быстрый старт
 
-Make sure to install dependencies:
+1. Установите зависимости
 
 ```bash
-# npm
-npm install
-
-# pnpm
 pnpm install
-
-# yarn
-yarn install
-
-# bun
-bun install
 ```
 
-## Development Server
-
-Start the development server on `http://localhost:3000`:
+2. Скопируйте `.envExemple` в `.env` и при необходимости измените значения.
+   В файле есть переменная `SA_PASSWORD` – общий пароль администратора, 
+   необходимый для сброса пароля пользователей.
 
 ```bash
-# npm
-npm run dev
+cp .envExemple .env
+```
 
-# pnpm
+3. Запустите базу данных (пример есть в `DB/docker-compose.yml`)
+
+```bash
+docker compose -f DB/docker-compose.yml up -d
+```
+
+4. Запустите приложение
+
+```bash
 pnpm dev
-
-# yarn
-yarn dev
-
-# bun
-bun run dev
 ```
 
-## Production
+По умолчанию сервер будет доступен на `http://localhost:4001`.
 
-Build the application for production:
+## API
+
+Все маршруты находятся под префиксом `/api`.
+
+### POST `/api/register`
+
+Создание нового пользователя.
+
+**Тело запроса**
+
+```json
+{
+  "name": "username",
+  "password": "password123"
+}
+```
+
+**Ответ**
+
+```json
+{
+  "name": "username",
+  "role": "guest",
+  "token": "<jwt>"
+}
+```
+
+### POST `/api/login`
+
+Авторизация существующего пользователя.
+
+**Тело запроса**
+
+```json
+{
+  "name": "username",
+  "password": "password123"
+}
+```
+
+**Ответ** – структура такая же, как у `register`.
+
+### POST `/api/reset-password`
+
+Сброс пароля администраторами. Требуется знание переменной `SA_PASSWORD`.
+
+**Тело запроса**
+
+```json
+{
+  "name": "username",
+  "sa_password": "admin-secret",
+  "newPassword": "newpass123"
+}
+```
+
+**Ответ**
+
+```json
+{ "success": true }
+```
+
+### GET `/api/me`
+
+Получение информации о текущем пользователе. Требуется заголовок
+
+```
+Authorization: Bearer <jwt>
+```
+
+**Ответ**
+
+```json
+{
+  "user": { "id": 1, "name": "username", "role": "guest" }
+}
+```
+
+### POST `/api/notification`
+
+Создание задачи или уведомления для текущего пользователя. Необходимо
+передать заголовок `Authorization: Bearer <jwt>`.
+
+**Тело запроса**
+
+```json
+{
+  "title": "Meeting",
+  "description": "Zoom call",
+  "date": "2025-07-10T12:00:00.000Z",
+  "regular": false,
+  "regularDate": null
+}
+```
+
+**Ответ** – список актуальных уведомлений пользователя.
+
+```json
+{
+  "notifications": [ { "id": 1, "title": "Meeting" } ]
+}
+```
+
+### GET `/api/notification`
+
+Возвращает все уведомления пользователя, дата которых ещё не прошла или они
+отмечены как регулярные. Требуется заголовок с токеном.
+
+**Ответ**
+
+```json
+{
+  "notifications": [ ... ]
+}
+```
+
+## Миграции базы данных
+
+Для применения схемы выполните:
 
 ```bash
-# npm
-npm run build
-
-# pnpm
-pnpm build
-
-# yarn
-yarn build
-
-# bun
-bun run build
+npx prisma migrate deploy
 ```
 
-Locally preview production build:
+## Разработка и сборка
 
-```bash
-# npm
-npm run preview
+Дополнительные команды находятся в `package.json`:
 
-# pnpm
-pnpm preview
+- `pnpm dev` – запуск в режиме разработки;
+- `pnpm build` – сборка проекта;
+- `pnpm preview` – предпросмотр собранного проекта.
 
-# yarn
-yarn preview
-
-# bun
-bun run preview
-```
-
-Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.
